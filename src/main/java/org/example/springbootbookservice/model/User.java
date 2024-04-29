@@ -1,4 +1,4 @@
-package org.example.springbootbookservice.user;
+package org.example.springbootbookservice.model;
 
 import jakarta.persistence.*;
 import lombok.*;

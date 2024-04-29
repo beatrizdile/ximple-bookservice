@@ -1,4 +1,4 @@
-package org.example.springbootbookservice.user;
+package org.example.springbootbookservice.model;
 
 public record RegisterDTO(String login, String password, UserRole role) {
 }
