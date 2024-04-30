@@ -1,4 +1,4 @@
-package org.example.springbootbookservice.services;
+package org.example.springbootbookservice.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;

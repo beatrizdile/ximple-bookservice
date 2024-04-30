@@ -2,7 +2,7 @@ package org.example.springbootbookservice.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import org.example.springbootbookservice.repo.UserRepo;
+import org.example.springbootbookservice.repository.UserRepository;
 import org.example.springbootbookservice.model.LoginResponseDTO;
 import org.example.springbootbookservice.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.example.springbootbookservice.model.AuthenticationDTO;
 import org.example.springbootbookservice.model.RegisterDTO;
-import org.example.springbootbookservice.services.TokenService;
+import org.example.springbootbookservice.service.TokenService;
 
 @RestController
 @RequestMapping("/auth")
@@ -29,7 +29,7 @@ public class AuthenticationController {
     private TokenService tokenService;
 
     @Autowired
-    private UserRepo repository;
+    private UserRepository repository;
 
     @PostMapping("/register")
     @Operation(

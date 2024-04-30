@@ -1,4 +1,4 @@
-package org.example.springbootbookservice.security;
+package org.example.springbootbookservice.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

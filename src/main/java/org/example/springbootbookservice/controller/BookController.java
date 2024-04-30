@@ -4,7 +4,9 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.example.springbootbookservice.model.Book;
-import org.example.springbootbookservice.repo.BookRepo;
+import org.example.springbootbookservice.model.UpdateBookRequestBody;
+import org.example.springbootbookservice.repository.BookRepository;
+import org.example.springbootbookservice.service.BookService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +15,21 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @RestController
+@RequestMapping("/books")
 @SecurityRequirement(name = "bearerAuth")
 public class BookController {
 
     @Autowired
-    private BookRepo bookRepo;
+    private final BookService bookService;
 
-    @GetMapping("/getAllBooks")
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
+    }
+
+    @GetMapping
     @Operation(
             description = "Get all registered books",
             responses = {
@@ -45,7 +53,7 @@ public class BookController {
     )
     public ResponseEntity<List<Book>> getAllBooks() {
         try {
-            List<Book> bookList = new ArrayList<>(bookRepo.findAll());
+            var bookList = bookService.getAllBooks();
 
             if (bookList.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -57,7 +65,7 @@ public class BookController {
         }
     }
 
-    @GetMapping("/getBookById/{id}")
+    @GetMapping("/{id}")
     @Operation(
             description = "Get book by providing it's ID",
             responses = {
@@ -79,9 +87,9 @@ public class BookController {
                     )
             }
     )
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+    public ResponseEntity<Book> getBookById(@PathVariable UUID id) {
         try {
-            Optional<Book> book = bookRepo.findById(id);
+            var book = bookService.getBookById(id);
 
             if (book.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
@@ -93,7 +101,7 @@ public class BookController {
         }
     }
 
-    @PostMapping("/addBook")
+    @PostMapping
     @Operation(
             description = "Register a new book",
             responses = {
@@ -113,14 +121,14 @@ public class BookController {
     )
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
         try {
-            Book bookObj = bookRepo.save(book);
+            Book bookObj = bookService.addBook(book);
             return new ResponseEntity<>(bookObj, HttpStatus.OK);
         } catch (Exception ex) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @PostMapping("/updateBookById/{id}")
+    @PatchMapping("/{id}")
     @Operation(
             description = "Update the attributes of a book by providing it's ID and a request body with the new content",
             responses = {
@@ -142,26 +150,21 @@ public class BookController {
                     )
             }
     )
-    public ResponseEntity<Book> updateBookById(@PathVariable Long id, @RequestBody Book newBook) {
+    public ResponseEntity<Book> updateBookById(@PathVariable UUID id, @RequestBody UpdateBookRequestBody newBook) {
         try {
-            Optional<Book> oldBook = bookRepo.findById(id);
+            Optional<Book> oldBook = bookService.getBookById(id);
             if (oldBook.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             }
-            Book updatedBook = oldBook.get();
-            updatedBook.setTitle(newBook.getTitle());
-            updatedBook.setAuthor(newBook.getAuthor());
-            updatedBook.setIsbn(newBook.getIsbn());
-            updatedBook.setQuantity(newBook.getQuantity());
 
-            Book bookObj = bookRepo.save(updatedBook);
+            Book bookObj = bookService.updateBook(oldBook.get(), newBook);
             return new ResponseEntity<>(bookObj, HttpStatus.OK);
         } catch (Exception ex) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @DeleteMapping("/deleteBookById/{id}")
+    @DeleteMapping("/{id}")
     @Operation(
             description = "Delete a book that contains the provided ID",
             responses = {
@@ -179,9 +182,11 @@ public class BookController {
                     )
             }
     )
-    public ResponseEntity<HttpStatus> deleteBookById(@PathVariable Long id) {
+    public ResponseEntity<HttpStatus> deleteBookById(@PathVariable UUID id) {
         try {
-            bookRepo.deleteById(id);
+            boolean status = bookService.deleteBook(id);
+            if (!status)
+                return new ResponseEntity<>(HttpStatus.NOT_FOUND);
             return new ResponseEntity<>(HttpStatus.OK);
         } catch (Exception ex) {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
